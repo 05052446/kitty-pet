@@ -4,7 +4,6 @@ on: [push, workflow_dispatch]
 
 jobs:
   build-macos:
-    # 使用拥有海量空闲机器的 macos-latest，秒开不排队
     runs-on: macos-latest
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.15"
@@ -12,30 +11,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # 通过 Rosetta 2 安装专用的 Intel x86_64 架构 Python 3.9，完美匹配老款 Mac
-      - name: Set up Python x64 (兼容 macOS 10.15+ Intel Mac)
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-          architecture: "x64"
-          
-      - name: Install dependencies
+      - name: Install Python 3.9 Universal (Intel x86_64)
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install "PyQt5<5.16" pyinstaller Pillow
+          curl -sL https://www.python.org/ftp/python/3.9.13/python-3.9.13-macos11.pkg -o python39.pkg
+          sudo installer -pkg python39.pkg -target /
+          arch -x86_64 /usr/local/bin/python3 -V
           
-      - name: Build macOS App Bundle
+      - name: Install Intel x86_64 dependencies
         run: |
-          pyinstaller --noconfirm --onedir --windowed \
+          arch -x86_64 /usr/local/bin/python3 -m pip install --upgrade pip
+          arch -x86_64 /usr/local/bin/python3 -m pip install "PyQt5<5.16" pyinstaller Pillow
+          
+      - name: Build macOS App Bundle (Intel x86_64 for macOS 10.15+)
+        run: |
+          arch -x86_64 /usr/local/bin/python3 -m PyInstaller \
+            --noconfirm --onedir --windowed \
             --name "HelloKitty桌宠" \
             --osx-bundle-identifier "com.kitty.desktoppet" \
             --add-data "assets:assets" \
             main.py
             
-      # 强制将最低支持系统版本写入 Info.plist，彻底解决“要求 macOS 11.0”报错
       - name: Patch Info.plist for macOS 10.15
         run: |
           plutil -replace LSMinimumSystemVersion -string "10.15.0" "dist/HelloKitty桌宠.app/Contents/Info.plist"
+          
+      - name: Check binary architecture
+        run: |
+          file "dist/HelloKitty桌宠.app/Contents/MacOS/HelloKitty桌宠"
           
       - name: Create Zip for Girlfriend
         run: |
