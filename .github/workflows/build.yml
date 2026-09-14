@@ -4,34 +4,39 @@ on: [push, workflow_dispatch]
 
 jobs:
   build-macos:
-    runs-on: macos-latest
+    # 使用 GitHub 的 Intel x86_64 专用服务器，全面兼容 macOS 10.15 Catalina 及后续所有高版本
+    runs-on: macos-13
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "10.15"
+      
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set up Python
+      - name: Set up Python (兼容 macOS 10.15+)
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.9"
           
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          pip3 install PyQt6 pyinstaller Pillow
+          pip3 install "PyQt5<5.16" pyinstaller Pillow
           
       - name: Build macOS App Bundle
         run: |
           pyinstaller --noconfirm --onedir --windowed \
             --name "HelloKitty桌宠" \
+            --osx-bundle-identifier "com.kitty.desktoppet" \
             --add-data "assets:assets" \
             main.py
             
       - name: Create Zip for Girlfriend
         run: |
           cd dist
-          zip -r -y HelloKitty_Mac版.zip "HelloKitty桌宠.app"
+          zip -r -y HelloKitty-Mac通用版.zip "HelloKitty桌宠.app"
           
       - name: Upload macOS App Artifact
         uses: actions/upload-artifact@v4
         with:
           name: HelloKitty-Mac版
-          path: dist/HelloKitty_Mac版.zip
+          path: dist/HelloKitty-Mac通用版.zip
