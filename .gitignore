@@ -1,0 +1,10 @@
+venv/
+.venv_mac/
+build/
+dist/
+__pycache__/
+*.pyc
+*.spec
+*.log
+HelloKittyPet.exe
+*.zip
