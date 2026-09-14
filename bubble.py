@@ -10,9 +10,11 @@ class SpeechBubble(QWidget):
     跟随桌宠头顶的漫画风格对话气泡
     """
     def __init__(self, parent=None):
-        super().__init__(parent, Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        super().__init__(parent, Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Window)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.setAttribute(Qt.WA_ShowWithoutActivating, True)
+        if hasattr(Qt, 'WA_MacAlwaysShowToolWindow'):
+            self.setAttribute(Qt.WA_MacAlwaysShowToolWindow, True)
 
         self.label = QLabel(self)
         self.label.setWordWrap(True)

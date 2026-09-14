@@ -15,14 +15,16 @@ class PetWindow(QWidget):
         self.assets_dir = assets_dir
         self.manager = StateManager()
 
-        # 窗口属性：无边框、背景完全透明、置顶工具窗口
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        # 窗口属性：无边框、背景完全透明、独立置顶窗口（Mac/Win 通用，永不后台休眠隐藏）
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Window)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
+        if hasattr(Qt, 'WA_MacAlwaysShowToolWindow'):
+            self.setAttribute(Qt.WA_MacAlwaysShowToolWindow, True)
         self.is_stay_on_top = True
 
-        # 缩放比例与尺寸 (适配 180x240 高清比例)
-        self.scale_factor = 1.0
+        # 缩放比例与尺寸 (默认 0.75 精致比例，尺寸 135x180，小巧灵动)
+        self.scale_factor = 0.75
         self.base_width = 180
         self.base_height = 240
         self.cur_width = int(self.base_width * self.scale_factor)
@@ -281,11 +283,11 @@ class PetWindow(QWidget):
         size_menu = menu.addMenu("🔍 调整大小")
         size_menu.setStyleSheet(menu_style)
         for scale, label in [
-            (0.8, "80%   (精致小巧)"),
-            (1.0, "100% (标准推荐)"),
+            (0.6, "60%   (迷你玩偶)"),
+            (0.75, "75%   (精致推荐)"),
+            (1.0, "100% (标准原图)"),
             (1.25, "125% (稍大显眼)"),
-            (1.5, "150% (超大玩偶)"),
-            (2.0, "200% (巨型挂件)")
+            (1.5, "150% (超大玩偶)")
         ]:
             action = size_menu.addAction(label)
             action.triggered.connect(lambda checked, s=scale: self.set_scale(s))

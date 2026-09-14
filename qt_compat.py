@@ -17,10 +17,11 @@ except ImportError:
     # 兼容 PyQt6 枚举规范
     Qt.FramelessWindowHint = Qt.WindowType.FramelessWindowHint
     Qt.WindowStaysOnTopHint = Qt.WindowType.WindowStaysOnTopHint
-    Qt.Tool = Qt.WindowType.Tool
+    Qt.Window = Qt.WindowType.Window
     Qt.WA_TranslucentBackground = Qt.WidgetAttribute.WA_TranslucentBackground
     Qt.WA_DeleteOnClose = Qt.WidgetAttribute.WA_DeleteOnClose
     Qt.WA_ShowWithoutActivating = Qt.WidgetAttribute.WA_ShowWithoutActivating
+    Qt.WA_MacAlwaysShowToolWindow = getattr(Qt.WidgetAttribute, "WA_MacAlwaysShowToolWindow", 96)
     Qt.LeftButton = Qt.MouseButton.LeftButton
     Qt.RightButton = Qt.MouseButton.RightButton
     Qt.AlignCenter = Qt.AlignmentFlag.AlignCenter
