@@ -1,0 +1,71 @@
+name: Build Desktop Pet (SYL Edition)
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "10.15"
+      
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Python 3.9 Universal (Intel x86_64)
+        run: |
+          curl -sL https://www.python.org/ftp/python/3.9.13/python-3.9.13-macos11.pkg -o python39.pkg
+          sudo installer -pkg python39.pkg -target /
+          arch -x86_64 /usr/local/bin/python3 -V
+          
+      - name: Install Intel x86_64 dependencies
+        run: |
+          arch -x86_64 /usr/local/bin/python3 -m pip install --upgrade pip
+          arch -x86_64 /usr/local/bin/python3 -m pip install "PyQt5<5.16" pyinstaller Pillow
+          
+      - name: Build macOS App Bundle (Intel x86_64 for macOS 10.15+)
+        run: |
+          arch -x86_64 /usr/local/bin/python3 -m PyInstaller \
+            --noconfirm --onedir --windowed \
+            --name "HelloKitty桌宠" \
+            --osx-bundle-identifier "com.kitty.desktoppet.syl" \
+            --add-data "assets:assets" \
+            main.py
+            
+      - name: Patch Info.plist for macOS 10.15
+        run: |
+          plutil -replace LSMinimumSystemVersion -string "10.15.0" "dist/HelloKitty桌宠.app/Contents/Info.plist"
+          
+      - name: Check binary architecture
+        run: |
+          file "dist/HelloKitty桌宠.app/Contents/MacOS/HelloKitty桌宠"
+          
+      - name: Create Zip for Girlfriend
+        run: |
+          cd dist
+          zip -r -y "HelloKitty-Mac版(依琳专属).zip" "HelloKitty桌宠.app"
+          
+      - name: Upload macOS App Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HelloKitty-Mac版(依琳专属)
+          path: "dist/HelloKitty-Mac版(依琳专属).zip"
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "PyQt5<5.16" pyinstaller Pillow
+      - name: Build Windows Executable
+        run: |
+          pyinstaller --noconfirm --onefile --windowed --name "HelloKitty-依琳专属" --add-data "assets;assets" main.py
+      - name: Upload Windows Exe Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HelloKitty-Windows版(依琳专属)
+          path: dist/HelloKitty-依琳专属.exe

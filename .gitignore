@@ -1,0 +1,15 @@
+venv/
+.venv/
+.venv_mac/
+build/
+dist/
+__pycache__/
+*.pyc
+*.spec
+*.log
+*.exe
+*.zip
+*.bak
+test_*.png
+girlfriend_screen.png
+terminal_*.png
