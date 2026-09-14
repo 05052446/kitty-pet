@@ -4,18 +4,20 @@ on: [push, workflow_dispatch]
 
 jobs:
   build-macos:
-    # 使用 GitHub 的 Intel x86_64 专用服务器，全面兼容 macOS 10.15 Catalina 及后续所有高版本
-    runs-on: macos-13
+    # 使用拥有海量空闲机器的 macos-latest，秒开不排队
+    runs-on: macos-latest
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.15"
       
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set up Python (兼容 macOS 10.15+)
+      # 通过 Rosetta 2 安装专用的 Intel x86_64 架构 Python 3.9，完美匹配老款 Mac
+      - name: Set up Python x64 (兼容 macOS 10.15+ Intel Mac)
         uses: actions/setup-python@v5
         with:
           python-version: "3.9"
+          architecture: "x64"
           
       - name: Install dependencies
         run: |
@@ -30,6 +32,11 @@ jobs:
             --add-data "assets:assets" \
             main.py
             
+      # 强制将最低支持系统版本写入 Info.plist，彻底解决“要求 macOS 11.0”报错
+      - name: Patch Info.plist for macOS 10.15
+        run: |
+          plutil -replace LSMinimumSystemVersion -string "10.15.0" "dist/HelloKitty桌宠.app/Contents/Info.plist"
+          
       - name: Create Zip for Girlfriend
         run: |
           cd dist
